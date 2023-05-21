@@ -1,6 +1,14 @@
 import React, {useState} from 'react';
 import 'reactflow/dist/style.css';
-import ReactFlow, {Background, Controls, Edge, MiniMap, Node, Panel, useEdgesState, useNodesState} from 'reactflow';
+import ReactFlow, {
+    Background,
+    Controls,
+    Edge,
+    MiniMap,
+    Node,
+    Panel,
+    NodeChange
+} from 'reactflow';
 import {BackgroundVariant} from "@reactflow/background";
 import {Connection} from "@reactflow/core";
 import {FormControl, Grid, InputLabel, MenuItem, Paper, Select, TextField} from "@mui/material";
@@ -10,13 +18,9 @@ import FastForwardIcon from '@mui/icons-material/FastForward';
 import {Core} from './core/core'
 import {RestApiCallCard, StartCard} from "./core/Components";
 import {FieldMapperCard} from "./core/Components/field-mapper-card/field-mapper-card.tsx";
-
-const startNode: Node = {
-    id: 'start',
-    type: 'startNode',
-    data: {label: 'Start Node'},
-    position: {x: window.innerWidth / 2, y: window.innerHeight / 5}
-}
+import {useDispatch, useSelector} from "react-redux";
+import {nodeActions, selectNode} from "./core/store/slices/node.slice.ts";
+import {edgeActions, selectEdges} from "./core/store/slices/edge.slice.ts";
 
 const nodeTypes = {
     startNode: StartCard,
@@ -26,8 +30,10 @@ const nodeTypes = {
 
 export default function App() {
 
-    const [nodes, setNodes, onNodesChange] = useNodesState([startNode]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+    const dispatch = useDispatch();
+
+    const nodes = useSelector(selectNode)
+    const edges = useSelector(selectEdges)
 
     const [newNodeName, setNewNodeName] = useState('');
     const [newNodeType, setNewNodeType] = useState('');
@@ -39,13 +45,14 @@ export default function App() {
         if (!params.source || !params.target) return;
         const edgeId = `${params.source}-${params.target}`
         if (edges.some(edge => edge.id === edgeId)) {
-            setEdges(edges => edges.filter(edge => edge.id !== edgeId));
+            dispatch(edgeActions.removeById(edgeId))
             return;
         }
         const newEdge: Edge = {
             id: edgeId, source: params.source, target: params.target
         }
-        setEdges(edges => [...edges, newEdge]);
+        console.log(newEdge)
+        dispatch(edgeActions.addOne(newEdge))
     }
 
     const addNewNode = () => {
@@ -56,7 +63,11 @@ export default function App() {
             type: newNodeType,
             data: {label: newNodeName}
         }
-        setNodes(nodes => [...nodes, newNode])
+        dispatch(nodeActions.addOne(newNode));
+    }
+
+    const onNodesChange = (changes: NodeChange[]) => {
+        dispatch(nodeActions.applyChanges(changes))
     }
 
     const execute = () => {
@@ -78,7 +89,7 @@ export default function App() {
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
+            // onEdgesChange={onEdgesChange}
             onConnect={addNewEdge}
             proOptions={{hideAttribution: true}}
             nodeTypes={nodeTypes}
@@ -97,6 +108,7 @@ export default function App() {
                                   <Select label='Select type'
                                           labelId="demo-simple-select-helper-label"
                                           variant='outlined'
+                                          value={newNodeType}
                                           onChange={v => setNewNodeType(v.target.value as any)}
                                           fullWidth
                                           size='small'
@@ -110,6 +122,7 @@ export default function App() {
                               <TextField size='small'
                                          label='New Node Name'
                                          fullWidth
+                                         value={newNodeName}
                                          onChange={(v) => setNewNodeName(v.target.value)}
                               />
                           </Grid>
