@@ -1,26 +1,15 @@
-import React, {useState} from 'react';
+import React from 'react';
 import 'reactflow/dist/style.css';
-import ReactFlow, {
-    Background,
-    Controls,
-    Edge,
-    MiniMap,
-    Node,
-    Panel,
-    NodeChange
-} from 'reactflow';
+import ReactFlow, {Background, Controls, Edge, EdgeChange, MiniMap, Node, NodeChange, Panel} from 'reactflow';
 import {BackgroundVariant} from "@reactflow/background";
 import {Connection} from "@reactflow/core";
-import {FormControl, Grid, InputLabel, MenuItem, Paper, Select, TextField} from "@mui/material";
-import Button from '@mui/material/Button';
-import FastForwardIcon from '@mui/icons-material/FastForward';
+import {useDispatch, useSelector} from "react-redux";
 
 import {Core} from './core/core'
-import {RestApiCallCard, StartCard} from "./core/Components";
-import {FieldMapperCard} from "./core/Components/field-mapper-card/field-mapper-card.tsx";
-import {useDispatch, useSelector} from "react-redux";
+import {FieldMapperCard, RestApiCallCard, StartCard} from "./cards";
 import {nodeActions, selectNode} from "./core/store/slices/node.slice.ts";
 import {edgeActions, selectEdges} from "./core/store/slices/edge.slice.ts";
+import {TopPanel} from "./core/components";
 
 const nodeTypes = {
     startNode: StartCard,
@@ -34,9 +23,6 @@ export default function App() {
 
     const nodes = useSelector(selectNode)
     const edges = useSelector(selectEdges)
-
-    const [newNodeName, setNewNodeName] = useState('');
-    const [newNodeType, setNewNodeType] = useState('');
 
     // const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
 
@@ -55,19 +41,23 @@ export default function App() {
         dispatch(edgeActions.addOne(newEdge))
     }
 
-    const addNewNode = () => {
-        if (!newNodeName) return;
+    const addNewNode = (name: string, type: string) => {
+        if (!name || !type) return;
         const newNode: Node = {
-            id: newNodeName,
+            id: name,
             position: {x: 200, y: 200},
-            type: newNodeType,
-            data: {label: newNodeName}
+            type: type,
+            data: {label: name}
         }
         dispatch(nodeActions.addOne(newNode));
     }
 
     const onNodesChange = (changes: NodeChange[]) => {
         dispatch(nodeActions.applyChanges(changes))
+    }
+
+    const onEdgesChange = (changes: EdgeChange[]) => {
+        dispatch(edgeActions.applyChanges(changes))
     }
 
     const execute = () => {
@@ -89,58 +79,13 @@ export default function App() {
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
-            // onEdgesChange={onEdgesChange}
+            onEdgesChange={onEdgesChange}
             onConnect={addNewEdge}
             proOptions={{hideAttribution: true}}
             nodeTypes={nodeTypes}
           >
               <Panel position="top-center">
-                  <Paper style={{padding: '20px', width: '80vW'}}>
-                      <Grid container
-                            spacing={2}
-                            direction="row"
-                            justifyContent="center"
-                            alignItems="center"
-                      >
-                          <Grid item xs={3}>
-                              <FormControl fullWidth>
-                                  <InputLabel>Select type</InputLabel>
-                                  <Select label='Select type'
-                                          labelId="demo-simple-select-helper-label"
-                                          variant='outlined'
-                                          value={newNodeType}
-                                          onChange={v => setNewNodeType(v.target.value as any)}
-                                          fullWidth
-                                          size='small'
-                                  >
-                                      <MenuItem value={'restApiCallCard'}>REST API Call</MenuItem>
-                                      <MenuItem value={'fieldMapperCard'}>Mapper</MenuItem>
-                                  </Select>
-                              </FormControl>
-                          </Grid>
-                          <Grid item xs={7}>
-                              <TextField size='small'
-                                         label='New Node Name'
-                                         fullWidth
-                                         value={newNodeName}
-                                         onChange={(v) => setNewNodeName(v.target.value)}
-                              />
-                          </Grid>
-                          <Grid item xs={1}>
-                              <Button variant="outlined"
-                                      size='medium'
-                                      onClick={() => addNewNode()}
-                              >Add</Button>
-                          </Grid>
-                          <Grid item xs={1}>
-                              <Button variant="outlined"
-                                      size='medium'
-                                      color="error"
-                                      onClick={() => execute()}
-                              ><FastForwardIcon/>&nbsp;Run</Button>
-                          </Grid>
-                      </Grid>
-                  </Paper>
+                  <TopPanel addNewNode={addNewNode}  execute={execute} />
               </Panel>
               <Controls/>
               <MiniMap/>
