@@ -33,6 +33,7 @@ export const TopPanel = (props: TopPanelProps) => {
                         >
                             <MenuItem value={'restApiCallCard'}>REST API Call</MenuItem>
                             <MenuItem value={'fieldMapperCard'}>Mapper</MenuItem>
+                            <MenuItem value={'advancedMapperCard'}>Advanced Mapper</MenuItem>
                         </Select>
                     </FormControl>
                 </Grid>

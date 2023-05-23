@@ -6,22 +6,23 @@ import {Connection} from "@reactflow/core";
 import {useDispatch, useSelector} from "react-redux";
 
 import {Core} from './core/core'
-import {FieldMapperCard, RestApiCallCard, StartCard} from "./cards";
-import {nodeActions, selectNode} from "./core/store/slices/node.slice.ts";
+import {AdvancedMapperCard, FieldMapperCard, RestApiCallCard, StartCard} from "./cards";
+import {nodeActions, selectAllNodes} from "./core/store/slices/node.slice.ts";
 import {edgeActions, selectEdges} from "./core/store/slices/edge.slice.ts";
 import {TopPanel} from "./core/components";
 
 const nodeTypes = {
     startNode: StartCard,
     restApiCallCard: RestApiCallCard,
-    fieldMapperCard: FieldMapperCard
+    fieldMapperCard: FieldMapperCard,
+    advancedMapperCard: AdvancedMapperCard,
 };
 
 export default function App() {
 
     const dispatch = useDispatch();
 
-    const nodes = useSelector(selectNode)
+    const nodes = useSelector(selectAllNodes)
     const edges = useSelector(selectEdges)
 
     // const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
@@ -47,7 +48,7 @@ export default function App() {
             id: name,
             position: {x: 200, y: 200},
             type: type,
-            data: {label: name}
+            data: {id: name, value: ''}
         }
         dispatch(nodeActions.addOne(newNode));
     }
@@ -85,7 +86,7 @@ export default function App() {
             nodeTypes={nodeTypes}
           >
               <Panel position="top-center">
-                  <TopPanel addNewNode={addNewNode}  execute={execute} />
+                  <TopPanel addNewNode={addNewNode} execute={execute}/>
               </Panel>
               <Controls/>
               <MiniMap/>

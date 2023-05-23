@@ -5,8 +5,14 @@ import {Edge, Node} from "reactflow";
 export class Core {
     private readonly udGraph: Graph;
 
-    constructor() {
+    constructor(nodes: Node[], edges: Edge[]) {
         this.udGraph = new Graph();
+        for (let n of nodes){
+            this.addVertix(n.id);
+        }
+        for (const e of edges) {
+            this.addEdge(e.source, e.target);
+        }
     }
 
     test() {

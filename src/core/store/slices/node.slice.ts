@@ -20,10 +20,18 @@ const nodeSlice = createSlice({
           applyChanges: (state, action: PayloadAction<NodeChange[]>) => {
               return applyNodeChanges(action.payload, state);
           },
+          updateNode: (state, action: PayloadAction<Node>) => {
+              const id = state.findIndex(s => s.id === action.payload.id);
+
+              if (id < 0) return state;
+              state[id] = action.payload;
+              return state;
+          },
       },
   }
 )
 
 export const nodeReducer = nodeSlice.reducer;
 export const nodeActions = nodeSlice.actions;
-export const selectNode = (state: RootState) => state.nodes;
+export const selectAllNodes = (state: RootState) => state.nodes;
+export const selectNode = (id: string) => (state: RootState) => state.nodes.find(n => n.id === id);

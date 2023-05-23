@@ -10,6 +10,7 @@ const edgeSlice = createSlice({
       reducers: {
           addOne: (state, action: PayloadAction<Edge>) => {
               console.log(action)
+              state = state.filter(s => action.payload.target !== s.target);
               state.push(action.payload)
               return state
           },
